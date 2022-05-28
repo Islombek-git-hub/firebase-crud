@@ -12,42 +12,59 @@ import "./App.css";
 function App() {
   const userCollectionRef = collection(db, "users");
   const [users, setUsers] = useState([]);
+  const [key, setKey] = useState(true);
+  const [updateId, setUpdateId] = useState("");
+
   const [formData, setFormData] = useState({
     name: "",
     age: null,
   });
   console.log(formData);
-  useEffect(() => {
-    const getUsers = async () => {
+  const getUsers = async () => {
+    try {
       const data = await getDocs(userCollectionRef);
       setUsers(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
-    };
-    getUsers();
-  }, []);
-
-  const createUser = async (e) => {
-    e.preventDefault();
-    await addDoc(userCollectionRef, formData);
-    setFormData({ ...formData, name: "", age: "" });
+    } catch (err) {
+      console.error(err);
+    }
   };
-  const updateUser = async (id, age) => {
-    const userDoc = doc(db, "users", id);
-    const newFields = { name: "a", age: age + 1 };
-    await updateDoc(userDoc, newFields);
+  useEffect(() => {
+    getUsers();
+  }, [db]);
+
+  const createUser = async () => {
+    try {
+      getUsers();
+      await addDoc(userCollectionRef, formData);
+      setFormData({ ...formData, name: "", age: "" });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  const updateUser = async (id) => {
+    try {
+      getUsers();
+      const userDoc = doc(db, "users", id);
+      await updateDoc(userDoc, formData);
+      setKey(true);
+      setFormData({ ...formData, name: "", age: "" });
+    } catch (err) {
+      console.error(err);
+    }
   };
   const deleteUser = async (id) => {
-    const userDoc = doc(db, "users", id);
-    await deleteDoc(userDoc);
+    try {
+      getUsers();
+      const userDoc = doc(db, "users", id);
+      await deleteDoc(userDoc);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
     <div>
-      <form
-        className="form"
-        onSubmit={(e) => {
-          createUser(e);
-        }}
-      >
+      <form className="form">
         <input
           type="text"
           value={formData.name}
@@ -66,7 +83,15 @@ function App() {
           placeholder="Age..."
           className="form-control my-3"
         />
-        <button className="btn btn-secondary">add</button>
+        <button
+          className="btn btn-secondary"
+          onClick={(e) => {
+            e.preventDefault();
+            key ? createUser() : updateUser(updateId);
+          }}
+        >
+          {key ? "add" : "edit"}
+        </button>
       </form>
 
       <table className="table">
@@ -89,7 +114,15 @@ function App() {
                   <td>
                     <button
                       className="btn btn-success"
-                      onClick={() => updateUser(user.id, user.age)}
+                      onClick={() => {
+                        setFormData({
+                          ...formData,
+                          name: user.name,
+                          age: user.age,
+                        });
+                        setUpdateId(user.id);
+                        setKey(false);
+                      }}
                     >
                       Edit
                     </button>
