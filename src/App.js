@@ -17,9 +17,8 @@ function App() {
 
   const [formData, setFormData] = useState({
     name: "",
-    age: null,
+    age: "",
   });
-  console.log(formData);
   const getUsers = async () => {
     try {
       const data = await getDocs(userCollectionRef);
@@ -33,33 +32,21 @@ function App() {
   }, [db]);
 
   const createUser = async () => {
-    try {
-      getUsers();
-      await addDoc(userCollectionRef, formData);
-      setFormData({ ...formData, name: "", age: "" });
-    } catch (err) {
-      console.error(err);
-    }
+    await addDoc(userCollectionRef, formData);
+    setFormData({ ...formData, name: "", age: "" });
+    getUsers();
   };
   const updateUser = async (id) => {
-    try {
-      getUsers();
-      const userDoc = doc(db, "users", id);
-      await updateDoc(userDoc, formData);
-      setKey(true);
-      setFormData({ ...formData, name: "", age: "" });
-    } catch (err) {
-      console.error(err);
-    }
+    const userDoc = doc(db, "users", id);
+    await updateDoc(userDoc, formData);
+    setFormData({ ...formData, name: "", age: "" });
+    getUsers();
+    setKey(true);
   };
   const deleteUser = async (id) => {
-    try {
-      getUsers();
-      const userDoc = doc(db, "users", id);
-      await deleteDoc(userDoc);
-    } catch (err) {
-      console.error(err);
-    }
+    const userDoc = doc(db, "users", id);
+    await deleteDoc(userDoc);
+    getUsers();
   };
 
   return (
