@@ -1,0 +1,12 @@
+.form {
+  width: 50%;
+  margin: 3rem auto;
+}
+.table {
+  width: 80% !important;
+  margin: auto;
+}
+td .btn {
+  font-size: 0.5rem !important;
+  padding: 2px 5px !important;
+}
